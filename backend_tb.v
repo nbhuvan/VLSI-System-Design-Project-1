@@ -20,7 +20,7 @@ wire sclk, sdin;
 wire ready;
 
 initial begin
-	// $monitor("%t %b %b %b %b %b %b",$time,ready, resetb1, resetb2, gainA1, gainA2, resetbvco);
+	$monitor("%t %b %b %b %b %b %b",$time,ready, resetb1, resetb2, gainA1, gainA2, resetbvco);
 end
 
 //==========================================================================
@@ -63,6 +63,6 @@ end
 
 //Generation of main_clk 
 always #2.5 main_clk <= ~main_clk;
-always #1.25 vco_clk <= ~vco_clk;
+always #0.555 vco_clk <= ~vco_clk;
 //============================================================================
 endmodule

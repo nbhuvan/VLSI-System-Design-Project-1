@@ -104,6 +104,7 @@ module backend (
         o_resetb2 = 0;
         o_gainA2 = 3'd0;
         o_resetbvco = 0;
+        vco_freq = 10'd0;
         k = 0;
     end
 
