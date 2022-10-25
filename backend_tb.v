@@ -15,12 +15,12 @@ reg main_clk;
 wire [1:0]gainA1 ; 
 wire [2:0]gainA2 ;
 wire resetbAll, resetb1, resetb2, resetbvco; 
-wire vco_clk;
+reg vco_clk;
 wire sclk, sdin;
 wire ready;
 
 initial begin
-	$monitor("%t %b %b %b %b %b %b",$time,ready, resetb1, resetb2, gainA1, gainA2, resetbvco);
+	// $monitor("%t %b %b %b %b %b %b",$time,ready, resetb1, resetb2, gainA1, gainA2, resetbvco);
 end
 
 //==========================================================================
@@ -56,12 +56,13 @@ initial
 begin
 	resetbFPGA <= 0;
 	main_clk <= 0;
-	
+	vco_clk <= 0;
 	#1 resetbFPGA <= 1;
-	#2500 $finish;
+	// #10000 $finish;
 end
 
 //Generation of main_clk 
 always #2.5 main_clk <= ~main_clk;
+always #1.25 vco_clk <= ~vco_clk;
 //============================================================================
 endmodule

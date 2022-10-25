@@ -61,7 +61,6 @@
 
 // endmodule
 
-`include "frequency_estimator.v"
 
 module backend (
     i_resetbAll,
@@ -90,11 +89,14 @@ module backend (
     output reg o_resetbvco;
     
     integer  i;
-    wire [10:0]vco_freq;
+    reg [10:0]vco_freq;
+    reg k;
+    initial k = 0;
+    
 
     // frequency_estimator fe(i_clk,i_vco_clk,i_resetbAll,vco_freq);
-
-    
+    initial vco_freq = 10'd0;
+    // initial $monitor("%t %d",$time,vco_freq);
     always @(negedge(i_resetbAll)) begin
         o_ready = 0;
         o_resetb1 = 0;
@@ -102,8 +104,37 @@ module backend (
         o_resetb2 = 0;
         o_gainA2 = 3'd0;
         o_resetbvco = 0;
+        k = 0;
     end
+
     
+    integer mainf = 0;
+    integer vcof = 0;
+    integer ans = 0;
+
+    always @(posedge(i_resetbAll)) begin
+        k = 1;
+    end
+
+    always @(posedge(i_clk) && k) begin
+        mainf = mainf + 1;
+        if(mainf==10000)begin
+            @(posedge(i_vco_clk));
+            vcof = vcof +1;
+            ans = (vcof*200)/mainf;
+            vco_freq = ans;
+            $display("\ni_vco_frequency: %d\n",ans);
+            k = 0;
+            mainf = 0;
+            vcof = 0;
+            $finish;
+        end
+    end
+
+    always @(posedge(i_vco_clk) && k) begin
+        vcof = vcof + 1;
+    end
+
     always @(posedge(i_resetbAll)) begin
         
         for(i=0;i<2;i=i+1)begin
