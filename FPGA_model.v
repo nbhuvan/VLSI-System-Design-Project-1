@@ -12,8 +12,8 @@ module FPGA_model(	i_resetbFPGA,
 
 //============================================================================
 //Parameter declarations
-parameter opcode_gainA1	= 3; //range: 0-3. Gain for amplifier 1
-parameter opcode_gainA2	= 7; //range: 0-7. Gain for amplifier 2
+parameter opcode_gainA1	= 2; //range: 0-3. Gain for amplifier 1
+parameter opcode_gainA2	= 5; //range: 0-7. Gain for amplifier 2
 
 //FPGA states
 parameter sRESET 	= 0; //Reset all internal variables. Make o_resetbAll=0.
