@@ -1,65 +1,65 @@
-module testbench();
+// module testbench();
 
-    reg i_resetbAll;
-    reg i_clk;
-    reg i_sclk;
-    reg i_sdin;
-    reg i_vco_clk;
+//     reg i_resetbAll;
+//     reg i_clk;
+//     reg i_sclk;
+//     reg i_sdin;
+//     reg i_vco_clk;
 
-    wire o_ready;
-    wire o_resetb1;
-    wire [1:0] o_gainA1;
-    wire o_resetb2;
-    wire [2:0] o_gainA2;
-    wire o_resetbvco;
+//     wire o_ready;
+//     wire o_resetb1;
+//     wire [1:0] o_gainA1;
+//     wire o_resetb2;
+//     wire [2:0] o_gainA2;
+//     wire o_resetbvco;
     
 
 
-    initial begin
-        $monitor("%t %b %b %b %b %b %b ",$time,o_ready, o_resetb1, o_resetb2, o_gainA1, o_gainA2, o_resetbvco);
-    end
+//     initial begin
+//         $monitor("%t %b %b %b %b %b %b ",$time,o_ready, o_resetb1, o_resetb2, o_gainA1, o_gainA2, o_resetbvco);
+//     end
 
-    initial begin
-        $dumpfile("backend.vcd");
-        $dumpvars(0,testbench);
-    end
+//     initial begin
+//         $dumpfile("backend.vcd");
+//         $dumpvars(0,testbench);
+//     end
         
-    backend bk(i_resetbAll,
-                i_clk,
-                i_sclk,
-                i_sdin,
-                i_vco_clk,
-                o_ready,
-                o_resetb1,
-                o_gainA1,
-                o_resetb2,
-                o_gainA2,
-                o_resetbvco);
+//     backend bk(i_resetbAll,
+//                 i_clk,
+//                 i_sclk,
+//                 i_sdin,
+//                 i_vco_clk,
+//                 o_ready,
+//                 o_resetb1,
+//                 o_gainA1,
+//                 o_resetb2,
+//                 o_gainA2,
+//                 o_resetbvco);
 
-    initial begin
-        i_clk = 0;
-        i_resetbAll = 1;
-        i_sclk = 0;
-        i_sdin = 0;
-        i_vco_clk = 0; 
-        #5 i_resetbAll = 0;
-        #15 i_resetbAll = 1;
-        #20 i_sdin = 1;
-        #30 i_sdin = 0;
-        #30 i_sdin = 0;
-        #30 i_sdin = 1;
-        #30 i_sdin = 1;
-        #30 i_sdin = 0;
-        #700 $finish;   
-    end 
-    always #15 i_sclk = ~i_sclk;
-    always #10 i_clk = ~i_clk; 
+//     initial begin
+//         i_clk = 0;
+//         i_resetbAll = 1;
+//         i_sclk = 0;
+//         i_sdin = 0;
+//         i_vco_clk = 0; 
+//         #5 i_resetbAll = 0;
+//         #15 i_resetbAll = 1;
+//         #20 i_sdin = 1;
+//         #30 i_sdin = 0;
+//         #30 i_sdin = 0;
+//         #30 i_sdin = 1;
+//         #30 i_sdin = 1;
+//         #30 i_sdin = 0;
+//         #700 $finish;   
+//     end 
+//     always #15 i_sclk = ~i_sclk;
+//     always #10 i_clk = ~i_clk; 
     
     
 
 
 
-endmodule
+// endmodule
 
 
 
@@ -103,12 +103,17 @@ module backend (
     // serialData sd(i_sclk,i_sdin,o_gainA1);
     always @(posedge(i_resetbAll)) begin
         
-        @(posedge(i_sclk));
-        @(posedge(i_sclk));
-        o_gainA1[0] = i_sdin;
+        // @(posedge(i_sclk));
+        // @(posedge(i_sclk));
+        // o_gainA1[0] = i_sdin;
 
-        @(posedge(i_sclk));
-        o_gainA1[1] = i_sdin;
+        // @(posedge(i_sclk));
+        // o_gainA1[1] = i_sdin;
+
+        for(i=0;i<2;i=i+1)begin
+            @(posedge(i_sclk));
+            o_gainA1[i] = i_sdin;
+        end
 
 
         for(i=0;i<3;i=i+1)begin
