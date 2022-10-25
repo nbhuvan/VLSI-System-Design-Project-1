@@ -47,7 +47,7 @@ backend backend_obj (	.i_resetbAll (resetbAll),
 			);
 //============================================================================
     initial begin
-        $dumpfile("testbench.vcd");
+        $dumpfile("backend_tb.vcd");
         $dumpvars(0,backend_tb);
     end
 
@@ -63,6 +63,6 @@ end
 
 //Generation of main_clk 
 always #2.5 main_clk <= ~main_clk;
-always #0.555 vco_clk <= ~vco_clk;
+always #3.65 vco_clk <= ~vco_clk; // Vco_clk frequency can change to a different frequency to estimate it.
 //============================================================================
 endmodule

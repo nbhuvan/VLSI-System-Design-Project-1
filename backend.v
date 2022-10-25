@@ -1,67 +1,3 @@
-// module testbench();
-
-//     reg i_resetbAll;
-//     reg i_clk;
-//     reg i_sclk;
-//     reg i_sdin;
-//     reg i_vco_clk;
-
-//     wire o_ready;
-//     wire o_resetb1;
-//     wire [1:0] o_gainA1;
-//     wire o_resetb2;
-//     wire [2:0] o_gainA2;
-//     wire o_resetbvco;
-    
-
-
-//     initial begin
-//         $monitor("%t %b %b %b %b %b %b ",$time,o_ready, o_resetb1, o_resetb2, o_gainA1, o_gainA2, o_resetbvco);
-//     end
-
-//     initial begin
-//         $dumpfile("backend.vcd");
-//         $dumpvars(0,testbench);
-//     end
-        
-//     backend bk(i_resetbAll,
-//                 i_clk,
-//                 i_sclk,
-//                 i_sdin,
-//                 i_vco_clk,
-//                 o_ready,
-//                 o_resetb1,
-//                 o_gainA1,
-//                 o_resetb2,
-//                 o_gainA2,
-//                 o_resetbvco);
-
-//     initial begin
-//         i_clk = 0;
-//         i_resetbAll = 1;
-//         i_sclk = 0;
-//         i_sdin = 0;
-//         i_vco_clk = 0; 
-//         #5 i_resetbAll = 0;
-//         #15 i_resetbAll = 1;
-//         #20 i_sdin = 1;
-//         #30 i_sdin = 0;
-//         #30 i_sdin = 0;
-//         #30 i_sdin = 1;
-//         #30 i_sdin = 1;
-//         #30 i_sdin = 0;
-//         #700 $finish;   
-//     end 
-//     always #15 i_sclk = ~i_sclk;
-//     always #10 i_clk = ~i_clk; 
-    
-    
-
-
-
-// endmodule
-
-
 module backend (
     i_resetbAll,
     i_clk,
@@ -89,14 +25,14 @@ module backend (
     output reg o_resetbvco;
     
     integer  i;
-    reg [10:0]vco_freq;
     reg k;
-    initial k = 0;
+    initial k = 0; // State for frequency estimation
     
 
-    // frequency_estimator fe(i_clk,i_vco_clk,i_resetbAll,vco_freq);
-    initial vco_freq = 10'd0;
-    // initial $monitor("%t %d",$time,vco_freq);
+    // ################################################################################
+
+    // Reset Registers
+
     always @(negedge(i_resetbAll)) begin
         o_ready = 0;
         o_resetb1 = 0;
@@ -104,14 +40,51 @@ module backend (
         o_resetb2 = 0;
         o_gainA2 = 3'd0;
         o_resetbvco = 0;
-        vco_freq = 10'd0;
         k = 0;
     end
 
+
+    // ################################################################################
+
+    // Serial Data communication 
     
-    integer mainf = 0;
-    integer vcof = 0;
-    integer ans = 0;
+    always @(posedge(i_resetbAll)) begin
+        
+        for(i=0;i<2;i=i+1)begin // Runs for two positive edges of i_sclk and reads the serial data into o_gainA1
+            @(posedge(i_sclk));
+            o_gainA1[i] = i_sdin;
+        end
+
+
+        for(i=0;i<3;i=i+1)begin // Runs for three positive edges of i_sclk and reads the serial data into o_gainA2
+            @(posedge(i_sclk));
+            o_gainA2[i] = i_sdin;
+        end
+
+        repeat(2)begin         // Waits for two clock cycles and then sets o_resetbvco
+            @(posedge(i_clk));
+        end
+        o_resetbvco = 1;
+
+        repeat(10)begin         // Waits for ten clock cycles and then sets o_resetb1 and o_resetb2
+            @(posedge(i_clk));
+        end
+        o_resetb1 = 1;
+        o_resetb2 = 1;
+
+        repeat(10)begin         // Waits for ten clock cycles and then sets o_ready
+            @(posedge(i_clk));
+        end
+        o_ready = 1;
+    end
+
+    // ################################################################################
+
+    // Frequency Estimator
+
+    real mainf = 0;
+    real vcof = 0;
+    real vco_freq = 0;
 
     always @(posedge(i_resetbAll)) begin
         k = 1;
@@ -121,14 +94,12 @@ module backend (
         mainf = mainf + 1;
         if(mainf==10000)begin
             @(posedge(i_vco_clk));
-            vcof = vcof +1;
-            ans = (vcof*200)/mainf;
-            vco_freq = ans;
-            $display("\ni_vco_frequency: %d\n",ans);
+            vco_freq = (vcof*200)/mainf;
+            $display("\n i_vco_frequency: %0.3f MHz\n",vco_freq);
             k = 0;
             mainf = 0;
             vcof = 0;
-            $finish;
+            $finish; // Finishes after estimating the frequency;
         end
     end
 
@@ -136,39 +107,7 @@ module backend (
         vcof = vcof + 1;
     end
 
-    always @(posedge(i_resetbAll)) begin
-        
-        for(i=0;i<2;i=i+1)begin
-            @(posedge(i_sclk));
-            o_gainA1[i] = i_sdin;
-        end
 
-
-        for(i=0;i<3;i=i+1)begin
-            @(posedge(i_sclk));
-            o_gainA2[i] = i_sdin;
-        end
-
-        repeat(2)begin
-            @(posedge(i_clk));
-        end
-        o_resetbvco = 1;
-
-        repeat(10)begin
-            @(posedge(i_clk));
-        end
-        o_resetb1 = 1;
-        o_resetb2 = 1;
-        repeat(10)begin
-            @(posedge(i_clk));
-        end
-        o_ready = 1;
-    end
-
-    // always @(posedge(i_resetbAll)) begin
-        
-    // end
-
-
+    // ################################################################################
 
 endmodule
